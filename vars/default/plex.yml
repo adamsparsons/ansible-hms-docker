@@ -1,6 +1,6 @@
 ### Plex Settings
 # Visit https://plex.tv/claim to obtain this token specific to your account
-plex_claim_token: "claim-W2VLPyNdEwx7j17KCHH3"
+plex_claim_token: ""
 
 # Adds a script to convert a Traefik certificate file to a Plex-supported certificate file so you can define a custom certificate for Plex
 # This script will also automatically update the Plex config file to point to the converted certificate file (if enabled a little further below)
