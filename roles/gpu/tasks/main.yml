@@ -19,7 +19,7 @@
 
 - name: Ensure the nvidia-docker2 package
   package:
-    name: nvidia-docker2
+    name: nvidia-docker
     state: "{{ gpu_prereq_packages_state }}"
   notify:
     - restart docker

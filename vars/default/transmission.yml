@@ -1,9 +1,9 @@
 ### VPN and Transmission settings
 # Visit https://haugene.github.io/docker-transmission-openvpn/supported-providers/ for supported VPN providers
 # The VPN provider to use and the credentials to use for the VPN connection
-transmission_vpn_provider: ""
-transmission_vpn_user: ""
-transmission_vpn_pass: ""
+transmission_vpn_provider: "ANONINE"
+transmission_vpn_user: "theplaidranger"
+transmission_vpn_pass: "CDE#vfr4bgt5"
 
 # Transmissoin seed ratio settings
 transmission_ratio_limit: "1" # default: "1"

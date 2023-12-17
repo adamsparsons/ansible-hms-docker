@@ -677,10 +677,10 @@ services:
     {% else %}
       - ${HMSD_APPS_PATH}/transmission/torrents:/data/torrents
     {% endif %}
-      - {{ hms_docker_media_path }}:/data/media
+      - {{ hms_docker_media_path }}:/data
     {% if nas_enable_additional_paths %}
         {% for path in nas_client_remote_additional_paths %}
-      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data/media_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
+      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
         {% endfor %}
     {% endif %}
     {% if expose_ports_enabled_sonarr %}
@@ -742,10 +742,10 @@ services:
     {% else %}
       - ${HMSD_APPS_PATH}/transmission/torrents:/data/torrents
     {% endif %}
-      - {{ hms_docker_media_path }}:/data/media
+      - {{ hms_docker_media_path }}:/data
     {% if nas_enable_additional_paths %}
         {% for path in nas_client_remote_additional_paths %}
-      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data/media_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
+      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
         {% endfor %}
     {% endif %}
     {% if expose_ports_enabled_sonarr %}
@@ -807,10 +807,10 @@ services:
     {% else %}
       - ${HMSD_APPS_PATH}/transmission/torrents:/data/torrents
     {% endif %}
-      - {{ hms_docker_media_path }}:/data/media
+      - {{ hms_docker_media_path }}:/data
     {% if nas_enable_additional_paths %}
         {% for path in nas_client_remote_additional_paths %}
-      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data/media_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
+      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
         {% endfor %}
     {% endif %}
     {% if expose_ports_enabled_radarr %}
@@ -872,10 +872,10 @@ services:
     {% else %}
       - ${HMSD_APPS_PATH}/transmission/torrents:/data/torrents
     {% endif %}
-      - {{ hms_docker_media_path }}:/data/media
+      - {{ hms_docker_media_path }}:/data
     {% if nas_enable_additional_paths %}
         {% for path in nas_client_remote_additional_paths %}
-      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data/media_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
+      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
         {% endfor %}
     {% endif %}
     {% if expose_ports_enabled_radarr %}
@@ -906,10 +906,10 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - ${HMSD_APPS_PATH}/bazarr/config:/config
-      - {{ hms_docker_media_path }}:/data/media
+      - {{ hms_docker_media_path }}:/data
     {% if nas_enable_additional_paths %}
         {% for path in nas_client_remote_additional_paths %}
-      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data/media_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
+      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
         {% endfor %}
     {% endif %}
     {% if traefik_enabled_bazarr or container_enabled_homepage %}
@@ -1036,10 +1036,10 @@ services:
       # temp folder for Plex transcoding
       - {{ plex_transcode_folder }}:/transcode
       # media folder where all movies and series are stored
-      - {{ hms_docker_media_path }}:/data/media
+      - {{ hms_docker_media_path }}:/data
     {% if nas_enable_additional_paths %}
         {% for path in nas_client_remote_additional_paths %}
-      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data/media_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
+      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
         {% endfor %}
     {% endif %}
     {% if traefik_enabled_plex or container_enabled_homepage %}
@@ -1251,10 +1251,10 @@ services:
       - ${HMSD_APPS_PATH}/tdarr/config/app:/app/configs
       - ${HMSD_APPS_PATH}/tdarr/config/logs:/app/logs
       - {{ tdarr_transcode_folder }}:/temp
-      - {{ hms_docker_media_path }}:/data/media
+      - {{ hms_docker_media_path }}:/data
     {% if nas_enable_additional_paths %}
         {% for path in nas_client_remote_additional_paths %}
-      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data/media_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
+      - {{ path.local_mount_path }}/{{ hms_docker_library_folder_name }}:/data_additional/{{ path.name | map('regex_replace', regex, replace) | list | join }}
         {% endfor %}
     {% endif %}
 {% endif %}
