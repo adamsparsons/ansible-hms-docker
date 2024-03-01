@@ -390,6 +390,7 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     volumes:
+      - {{ hms_docker_media_path }}:/data
       - ${HMSD_APPS_PATH}/sabnzbd/config:/config
       {% if sabnzbd_enable_downloads_mount %}
       - ${HMSD_APPS_PATH}/sabnzbd/downloads:/downloads
@@ -397,7 +398,7 @@ services:
       {% endif %}
     {% if expose_ports_enabled_sabnzbd %}
     ports:
-      - 8082:8080
+      - 8084:8080
     {% endif %}
     {% if traefik_enabled_sabnzbd or container_enabled_homepage %}
     labels:
@@ -992,6 +993,171 @@ services:
     {% endif %}
 {% endif %}
 
+{% if container_enabled_wizarr %}
+  # Wizarr container, Plex invite platform
+  wizarr:
+    image: ghcr.io/wizarrrr/wizarr:latest
+    container_name: wizarr
+    restart: ${RESTART_POLICY}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - "media_net"
+      - "download_net"
+      - "traefik_net"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    {% if traefik_enabled_wizarr or container_enabled_homepage %}
+    labels:
+      {% if traefik_enabled_wizarr %}
+      - traefik.enable=true
+      - traefik.http.services.wizarr-${COMPOSE_PROJECT}.loadbalancer.server.port=5690
+      - traefik.http.routers.wizarr-${COMPOSE_PROJECT}.rule=Host(`{{ hms_docker_container_map['wizarr']['proxy_host_rule'] }}.${HMSD_DOMAIN}`)
+      - "traefik.http.routers.wizarr-${COMPOSE_PROJECT}.middlewares=external-ipwhitelist"
+        {% if authentik_enabled_wizarr %}
+      - traefik.http.routers.wizarr-${COMPOSE_PROJECT}.middlewares=authentik-proxy-${COMPOSE_PROJECT}-wizarr-midware@docker
+        {% endif %}
+      {% endif %}
+      {% if container_enabled_homepage and homepage_enabled_wizarr %}
+      - homepage.group=Managers
+      - homepage.name=wizarr
+      - homepage.icon=wizarr.png
+      - homepage.href=http://{{ hms_docker_container_map['wizarr']['proxy_host_rule'] }}.${HMSD_DOMAIN}
+      - homepage.description=Request Manager
+      - homepage.widget.type=wizarr
+      - homepage.widget.url=http://wizarr:5690
+      - homepage.widget.key=${wizarr_KEY:-apikeyapikeyapikey}
+      {% if homepage_stats_enabled_wizarr %}
+      - homepage.showStats=true
+      {% endif %}
+      {% endif %}
+    {% endif %}
+    volumes:
+      - ${HMSD_APPS_PATH}/wizarr/config:/config
+      - ${HMSD_APPS_PATH}/wizarr/database:/data/database
+    {% if expose_ports_enabled_wizarr %}
+    ports:
+      - 5690:5690
+    {% endif %}
+{% endif %}
+
+{% if container_enabled_tubesync %}
+  # tubesync container, YouTube to Plex
+  tubesync:
+    image: ghcr.io/meeb/tubesync:latest
+    container_name: tubesync
+    restart: ${RESTART_POLICY}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - "media_net"
+      - "download_net"
+      - "traefik_net"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    {% if traefik_enabled_tubesync or container_enabled_homepage %}
+    labels:
+      {% if traefik_enabled_tubesync %}
+      - traefik.enable=true
+      - traefik.http.services.tubesync-${COMPOSE_PROJECT}.loadbalancer.server.port=4848
+      - traefik.http.routers.tubesync-${COMPOSE_PROJECT}.rule=Host(`{{ hms_docker_container_map['tubesync']['proxy_host_rule'] }}.${HMSD_DOMAIN}`)
+      - "traefik.http.routers.tubesync-${COMPOSE_PROJECT}.middlewares=external-ipwhitelist"
+        {% if authentik_enabled_tubesync %}
+      - traefik.http.routers.tubesync-${COMPOSE_PROJECT}.middlewares=authentik-proxy-${COMPOSE_PROJECT}-tubesync-midware@docker
+        {% endif %}
+      {% endif %}
+      {% if container_enabled_homepage and homepage_enabled_tubesync %}
+      - homepage.group=Managers
+      - homepage.name=tubesync
+      - homepage.icon=tubesync.png
+      - homepage.href=http://{{ hms_docker_container_map['tubesync']['proxy_host_rule'] }}.${HMSD_DOMAIN}
+      - homepage.description=Request Manager
+      - homepage.widget.type=tubesync
+      - homepage.widget.url=http://tubesync:4848
+      - homepage.widget.key=${tubesync_KEY:-apikeyapikeyapikey}
+      {% if homepage_stats_enabled_tubesync %}
+      - homepage.showStats=true
+      {% endif %}
+      {% endif %}
+    {% endif %}
+    volumes:
+      - ${HMSD_APPS_PATH}/tubesync-config:/config
+      - {{ hms_docker_media_path }}/tubesync:/downloads
+    {% if expose_ports_enabled_tubesync %}
+    ports:
+      - 4848:4848
+    {% endif %}
+{% endif %}
+
+{% if container_enabled_whisper %}
+  # whisper container, AI subtitles
+  whisper:
+    image: mccloud/subgen:latest
+    container_name: whisper
+    restart: ${RESTART_POLICY}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - "media_net"
+      - "download_net"
+      - "traefik_net"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - PLEXTOKEN=tve5xbx-ByWxjehxfsCB
+      - APPEND="True"
+      - TRANSCRIBE_DEVICE=gpu
+      - WHISPER_MODEL=large-v3
+    {% if enable_nvidia_gpu %}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - TRANSCRIBE_DEVICE=cuda
+    runtime: nvidia
+    {% endif %}
+    {% if traefik_enabled_whisper or container_enabled_homepage %}
+    labels:
+      {% if traefik_enabled_whisper %}
+      - traefik.enable=true
+      - traefik.http.services.whisper-${COMPOSE_PROJECT}.loadbalancer.server.port=5690
+      - traefik.http.routers.whisper-${COMPOSE_PROJECT}.rule=Host(`{{ hms_docker_container_map['whisper']['proxy_host_rule'] }}.${HMSD_DOMAIN}`)
+      - "traefik.http.routers.whisper-${COMPOSE_PROJECT}.middlewares=external-ipwhitelist"
+        {% if authentik_enabled_whisper %}
+      - traefik.http.routers.whisper-${COMPOSE_PROJECT}.middlewares=authentik-proxy-${COMPOSE_PROJECT}-whisper-midware@docker
+        {% endif %}
+      {% endif %}
+      {% if container_enabled_homepage and homepage_enabled_whisper %}
+      - homepage.group=Managers
+      - homepage.name=whisper
+      - homepage.icon=whisper.png
+      - homepage.href=http://{{ hms_docker_container_map['whisper']['proxy_host_rule'] }}.${HMSD_DOMAIN}
+      - homepage.description=Request Manager
+      - homepage.widget.type=whisper
+      - homepage.widget.url=http://whisper:8090
+      - homepage.widget.key=${whisper_KEY:-apikeyapikeyapikey}
+      {% if homepage_stats_enabled_whisper %}
+      - homepage.showStats=true
+      {% endif %}
+      {% endif %}
+    {% endif %}
+    volumes:
+      - {{ hms_docker_media_path }}:/data
+      - ${HMSD_APPS_PATH}/subgen:/subgen
+    {% if expose_ports_enabled_whisper %}
+    ports:
+      - 9191:8090
+    {% endif %}
+{% endif %}
+
 {% if container_enabled_plex %}
   # Plex container, media server
   plex:
@@ -1124,6 +1290,7 @@ services:
       - ${HMSD_APPS_PATH}/tautulli/config:/config
       # Plex logs location
       - ${HMSD_APPS_PATH}/plex/config/Library/Application Support/Plex Media Server/Logs:/plex_logs:ro
+      - {{ hms_docker_media_path }}:/data
 {% endif %}
 
 {% if cloudflare_ddns_enabled %}

@@ -23,6 +23,10 @@ container_enabled_tdarr: "{{ True if (hms_docker_container_map['tdarr']['enabled
 container_enabled_homepage: "{{ True if (hms_docker_container_map['homepage']['enabled'] is defined and hms_docker_container_map['homepage']['enabled']) else False }}"
 container_enabled_tailscale: "{{ True if (tailscale_enabled is defined and tailscale_enabled) else False }}"
 container_enabled_flaresolverr: '{{ True if (flaresolverr_enabled is defined and flaresolverr_enabled) else False }}'
+container_enabled_stablediffusion: "{{ True if (hms_docker_container_map['stablediffusion']['enabled'] is defined and hms_docker_container_map['stablediffusion']['enabled']) else False }}"
+container_enabled_wizarr: "{{ True if (hms_docker_container_map['wizarr']['enabled'] is defined and hms_docker_container_map['wizarr']['enabled']) else False }}"
+container_enabled_whisper: "{{ True if (hms_docker_container_map['whisper']['enabled'] is defined and hms_docker_container_map['whisper']['enabled']) else False }}"
+
 
 # Traefik computed variables
 traefik_enabled_traefik: "{{ True if (hms_docker_container_map['traefik']['traefik'] is defined and hms_docker_container_map['traefik']['traefik']) else False }}"
@@ -41,6 +45,10 @@ traefik_enabled_nzbget: "{{ True if (hms_docker_container_map['nzbget']['traefik
 traefik_enabled_sabnzbd: "{{ True if (hms_docker_container_map['sabnzbd']['traefik'] is defined and hms_docker_container_map['sabnzbd']['traefik']) else False }}"
 traefik_enabled_tdarr: "{{ True if (hms_docker_container_map['tdarr']['traefik'] is defined and hms_docker_container_map['tdarr']['traefik']) else False }}"
 traefik_enabled_homepage: "{{ True if (hms_docker_container_map['homepage']['traefik'] is defined and hms_docker_container_map['homepage']['traefik']) else False }}"
+traefik_enabled_stablediffusion: "{{ True if (hms_docker_container_map['stablediffusion']['traefik'] is defined and hms_docker_container_map['stablediffusion']['traefik']) else False }}"
+traefik_enabled_wizarr: "{{ True if (hms_docker_container_map['wizarr']['traefik'] is defined and hms_docker_container_map['wizarr']['traefik']) else False }}"
+traefik_enabled_whisper: "{{ True if (hms_docker_container_map['whisper']['traefik'] is defined and hms_docker_container_map['whisper']['traefik']) else False }}"
+
 
 
 # Public container exposure computed variables
@@ -59,6 +67,10 @@ expose_public_enabled_nzbget: "{{ True if (hms_docker_container_map['nzbget']['e
 expose_public_enabled_sabnzbd: "{{ True if (hms_docker_container_map['sabnzbd']['expose_to_public'] is defined and hms_docker_container_map['sabnzbd']['expose_to_public']) else False }}"
 expose_public_enabled_tdarr: "{{ True if (hms_docker_container_map['tdarr']['expose_to_public'] is defined and hms_docker_container_map['tdarr']['expose_to_public']) else False }}"
 expose_public_enabled_homepage: "{{ True if (hms_docker_container_map['homepage']['expose_to_public'] is defined and hms_docker_container_map['homepage']['expose_to_public']) else False }}"
+expose_public_enabled_stablediffusion: "{{ True if (hms_docker_container_map['stablediffusion']['expose_to_public'] is defined and hms_docker_container_map['stablediffusion']['expose_to_public']) else False }}"
+expose_public_enabled_wizarr: "{{ True if (hms_docker_container_map['wizarr']['expose_to_public'] is defined and hms_docker_container_map['wizarr']['expose_to_public']) else False }}"
+expose_public_enabled_whisper: "{{ True if (hms_docker_container_map['whisper']['expose_to_public'] is defined and hms_docker_container_map['whisper']['expose_to_public']) else False }}"
+
 
 
 # Container host port mapping computed variables
@@ -78,6 +90,10 @@ expose_ports_enabled_sabnzbd: "{{ True if (container_expose_ports or not contain
 expose_ports_enabled_tdarr: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_tdarr) else False }}"
 expose_ports_enabled_homepage: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_homepage) else False }}"
 expose_ports_enabled_flaresolverr: '{{ True if (container_expose_ports) else False }}'
+expose_ports_enabled_stablediffusion: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_stablediffusion) else False }}"
+expose_ports_enabled_wizarr: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_wizarr) else False }}"
+expose_ports_enabled_whisper: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_whisper) else False }}"
+
 
 # Authentik computed variables
 authentik_enabled_globally: "{{ True if (container_enabled_authentik or authentik_enabled) else False }}"
@@ -98,6 +114,9 @@ authentik_http_proxy_nzbget: "{{ True if (hms_docker_container_map['nzbget']['au
 authentik_http_proxy_sabnzbd: "{{ True if (hms_docker_container_map['sabnzbd']['authentik_provider_type'] is defined and hms_docker_container_map['sabnzbd']['authentik_provider_type'] == 'proxy') else False }}"
 authentik_http_proxy_tdarr: "{{ True if (hms_docker_container_map['tdarr']['authentik_provider_type'] is defined and hms_docker_container_map['tdarr']['authentik_provider_type'] == 'proxy') else False }}"
 authentik_http_proxy_homepage: "{{ True if (hms_docker_container_map['homepage']['authentik_provider_type'] is defined and hms_docker_container_map['homepage']['authentik_provider_type'] == 'proxy') else False }}"
+authentik_http_proxy_stablediffusion: "{{ True if (hms_docker_container_map['stablediffusion']['authentik_provider_type'] is defined and hms_docker_container_map['stablediffusion']['authentik_provider_type'] == 'proxy') else False }}"
+authentik_http_proxy_wizarr: "{{ True if (hms_docker_container_map['wizarr']['authentik_provider_type'] is defined and hms_docker_container_map['wizarr']['authentik_provider_type'] == 'proxy') else False }}"
+authentik_http_proxy_whisper: "{{ True if (hms_docker_container_map['whisper']['authentik_provider_type'] is defined and hms_docker_container_map['whisper']['authentik_provider_type'] == 'proxy') else False }}"
 
 
 
@@ -117,6 +136,9 @@ authentik_enabled_sabnzbd: "{{ True if ((hms_docker_container_map['sabnzbd']['au
 authentik_enabled_authentik: "{{ True if ((hms_docker_container_map['authentik']['authentik'] is defined and hms_docker_container_map['authentik']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_authentik)) else False }}"
 authentik_enabled_tdarr: "{{ True if ((hms_docker_container_map['tdarr']['authentik'] is defined and hms_docker_container_map['tdarr']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_authentik)) else False }}"
 authentik_enabled_homepage: "{{ True if ((hms_docker_container_map['homepage']['authentik'] is defined and hms_docker_container_map['homepage']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_homepage)) else False }}"
+authentik_enabled_stablediffusion: "{{ True if ((hms_docker_container_map['stablediffusion']['authentik'] is defined and hms_docker_container_map['stablediffusion']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_stablediffusion)) else False }}"
+authentik_enabled_wizarr: "{{ True if ((hms_docker_container_map['wizarr']['authentik'] is defined and hms_docker_container_map['wizarr']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_wizarr)) else False }}"
+authentik_enabled_whisper: "{{ True if ((hms_docker_container_map['whisper']['authentik'] is defined and hms_docker_container_map['whisper']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_whisper)) else False }}"
 
 authentik_geoip_enabled: "{{ True if ((authentik_geoip_account_id is defined and authentik_geoip_account_id != '') and (authentik_geoip_license_key is defined and authentik_geoip_license_key != '')) else False }}"
 
@@ -136,6 +158,10 @@ homepage_enabled_nzbget: "{{ True if (hms_docker_container_map['nzbget']['homepa
 homepage_enabled_sabnzbd: "{{ True if (hms_docker_container_map['sabnzbd']['homepage'] is defined and hms_docker_container_map['sabnzbd']['homepage']) else False }}"
 homepage_enabled_authentik: "{{ True if (hms_docker_container_map['authentik']['homepage'] is defined and hms_docker_container_map['authentik']['homepage']) else False }}"
 homepage_enabled_tdarr: "{{ True if (hms_docker_container_map['tdarr']['homepage'] is defined and hms_docker_container_map['tdarr']['homepage']) else False }}"
+homepage_enabled_stablediffusion: "{{ True if (hms_docker_container_map['stablediffusion']['homepage'] is defined and hms_docker_container_map['stablediffusion']['homepage']) else False }}"
+homepage_enabled_wizarr: "{{ True if (hms_docker_container_map['wizarr']['homepage'] is defined and hms_docker_container_map['wizarr']['homepage']) else False }}"
+homepage_enabled_whisper: "{{ True if (hms_docker_container_map['whisper']['homepage'] is defined and hms_docker_container_map['whisper']['homepage']) else False }}"
+
 
 homepage_stats_enabled_traefik: "{{ True if (hms_docker_container_map['traefik']['homepage_stats'] is defined and hms_docker_container_map['traefik']['homepage_stats']) else False }}"
 homepage_stats_enabled_sonarr: "{{ True if (hms_docker_container_map['sonarr']['homepage_stats'] is defined and hms_docker_container_map['sonarr']['homepage_stats']) else False }}"
@@ -151,6 +177,9 @@ homepage_stats_enabled_nzbget: "{{ True if (hms_docker_container_map['nzbget']['
 homepage_stats_enabled_sabnzbd: "{{ True if (hms_docker_container_map['sabnzbd']['homepage_stats'] is defined and hms_docker_container_map['sabnzbd']['homepage_stats']) else False }}"
 homepage_stats_enabled_authentik: "{{ True if (hms_docker_container_map['authentik']['homepage_stats'] is defined and hms_docker_container_map['authentik']['homepage_stats']) else False }}"
 homepage_stats_enabled_tdarr: "{{ True if (hms_docker_container_map['tdarr']['homepage_stats'] is defined and hms_docker_container_map['tdarr']['homepage_stats']) else False }}"
+homepage_stats_enabled_stablediffusion: "{{ True if (hms_docker_container_map['stablediffusion']['homepage_stats'] is defined and hms_docker_container_map['stablediffusion']['homepage_stats']) else False }}"
+homepage_stats_enabled_wizarr: "{{ True if (hms_docker_container_map['wizarr']['homepage_stats'] is defined and hms_docker_container_map['wizarr']['homepage_stats']) else False }}"
+homepage_stats_enabled_whisper: "{{ True if (hms_docker_container_map['whisper']['homepage_stats'] is defined and hms_docker_container_map['whisper']['homepage_stats']) else False }}"
 
 
 
@@ -169,3 +198,13 @@ family_override: "{{ 'redhat' if ansible_os_family | lower == 'almalinux' else a
 # Which python interpreter to use, only change if you're an advanced user and know what you're doing
 ansible_python_interpreter: /usr/bin/python3
 #######################################################################
+
+# Adding tubesync
+container_enabled_tubesync: "{{ True if (hms_docker_container_map['tubesync']['enabled'] is defined and hms_docker_container_map['tubesync']['enabled']) else False }}"
+traefik_enabled_tubesync: "{{ True if (hms_docker_container_map['tubesync']['traefik'] is defined and hms_docker_container_map['tubesync']['traefik']) else False }}"
+expose_public_enabled_tubesync: "{{ True if (hms_docker_container_map['tubesync']['expose_to_public'] is defined and hms_docker_container_map['tubesync']['expose_to_public']) else False }}"
+expose_ports_enabled_tubesync: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_tubesync) else False }}"
+authentik_http_proxy_tubesync: "{{ True if (hms_docker_container_map['tubesync']['authentik_provider_type'] is defined and hms_docker_container_map['tubesync']['authentik_provider_type'] == 'proxy') else False }}"
+authentik_enabled_tubesync: "{{ True if ((hms_docker_container_map['tubesync']['authentik'] is defined and hms_docker_container_map['tubesync']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_tubesync)) else False }}"
+homepage_enabled_tubesync: "{{ True if (hms_docker_container_map['tubesync']['homepage'] is defined and hms_docker_container_map['tubesync']['homepage']) else False }}"
+homepage_stats_enabled_tubesync: "{{ True if (hms_docker_container_map['tubesync']['homepage_stats'] is defined and hms_docker_container_map['tubesync']['homepage_stats']) else False }}"

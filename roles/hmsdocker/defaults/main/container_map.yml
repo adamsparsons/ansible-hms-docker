@@ -165,3 +165,23 @@ hms_docker_container_map:
     expose_to_public: no
     homepage: yes
     homepage_stats: no
+  wizarr:
+    enabled: yes
+    proxy_host_rule: wizarr
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: yes
+    homepage: no
+    homepage_stats: no
+  whisper:
+    enabled: yes
+    proxy_host_rule: whisper
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: yes
+    homepage: no
+    homepage_stats: no
