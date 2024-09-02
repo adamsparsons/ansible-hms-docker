@@ -208,3 +208,23 @@ authentik_http_proxy_tubesync: "{{ True if (hms_docker_container_map['tubesync']
 authentik_enabled_tubesync: "{{ True if ((hms_docker_container_map['tubesync']['authentik'] is defined and hms_docker_container_map['tubesync']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_tubesync)) else False }}"
 homepage_enabled_tubesync: "{{ True if (hms_docker_container_map['tubesync']['homepage'] is defined and hms_docker_container_map['tubesync']['homepage']) else False }}"
 homepage_stats_enabled_tubesync: "{{ True if (hms_docker_container_map['tubesync']['homepage_stats'] is defined and hms_docker_container_map['tubesync']['homepage_stats']) else False }}"
+
+# Adding gphotos
+container_enabled_gphotos: "{{ True if (hms_docker_container_map['gphotos']['enabled'] is defined and hms_docker_container_map['gphotos']['enabled']) else False }}"
+traefik_enabled_gphotos: "{{ True if (hms_docker_container_map['gphotos']['traefik'] is defined and hms_docker_container_map['gphotos']['traefik']) else False }}"
+expose_public_enabled_gphotos: "{{ True if (hms_docker_container_map['gphotos']['expose_to_public'] is defined and hms_docker_container_map['gphotos']['expose_to_public']) else False }}"
+expose_ports_enabled_gphotos: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_gphotos) else False }}"
+authentik_http_proxy_gphotos: "{{ True if (hms_docker_container_map['gphotos']['authentik_provider_type'] is defined and hms_docker_container_map['gphotos']['authentik_provider_type'] == 'proxy') else False }}"
+authentik_enabled_gphotos: "{{ True if ((hms_docker_container_map['gphotos']['authentik'] is defined and hms_docker_container_map['gphotos']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_gphotos)) else False }}"
+homepage_enabled_gphotos: "{{ True if (hms_docker_container_map['gphotos']['homepage'] is defined and hms_docker_container_map['gphotos']['homepage']) else False }}"
+homepage_stats_enabled_gphotos: "{{ True if (hms_docker_container_map['gphotos']['homepage_stats'] is defined and hms_docker_container_map['gphotos']['homepage_stats']) else False }}"
+
+# Adding agentdvr
+container_enabled_agentdvr: "{{ True if (hms_docker_container_map['agentdvr']['enabled'] is defined and hms_docker_container_map['agentdvr']['enabled']) else False }}"
+traefik_enabled_agentdvr: "{{ True if (hms_docker_container_map['agentdvr']['traefik'] is defined and hms_docker_container_map['agentdvr']['traefik']) else False }}"
+expose_public_enabled_agentdvr: "{{ True if (hms_docker_container_map['agentdvr']['expose_to_public'] is defined and hms_docker_container_map['agentdvr']['expose_to_public']) else False }}"
+expose_ports_enabled_agentdvr: "{{ True if (container_expose_ports or not container_enabled_traefik or not traefik_enabled_agentdvr) else False }}"
+authentik_http_proxy_agentdvr: "{{ True if (hms_docker_container_map['agentdvr']['authentik_provider_type'] is defined and hms_docker_container_map['agentdvr']['authentik_provider_type'] == 'proxy') else False }}"
+authentik_enabled_agentdvr: "{{ True if ((hms_docker_container_map['agentdvr']['authentik'] is defined and hms_docker_container_map['agentdvr']['authentik']) and (authentik_enabled_globally and authentik_http_proxy_agentdvr)) else False }}"
+homepage_enabled_agentdvr: "{{ True if (hms_docker_container_map['agentdvr']['homepage'] is defined and hms_docker_container_map['agentdvr']['homepage']) else False }}"
+homepage_stats_enabled_agentdvr: "{{ True if (hms_docker_container_map['agentdvr']['homepage_stats'] is defined and hms_docker_container_map['agentdvr']['homepage_stats']) else False }}"

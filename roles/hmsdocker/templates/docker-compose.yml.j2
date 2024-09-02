@@ -1063,6 +1063,7 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
+      - TUBESYNC_WORKERS=4
     {% if traefik_enabled_tubesync or container_enabled_homepage %}
     labels:
       {% if traefik_enabled_tubesync %}
@@ -1094,6 +1095,119 @@ services:
     {% if expose_ports_enabled_tubesync %}
     ports:
       - 4848:4848
+    {% endif %}
+{% endif %}
+
+{% if container_enabled_agentdvr %}
+  # agentdvr container
+  agentdvr:
+    image: mekayelanik/ispyagentdvr:latest
+    container_name: agentdvr
+    restart: ${RESTART_POLICY}
+    devices:
+      - /dev/video0:/dev/video0
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - "media_net"
+      - "download_net"
+      - "traefik_net"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - WEBUI_PORT=8090
+      - TZ=${TIMEZONE}
+    {% if traefik_enabled_agentdvr or container_enabled_homepage %}
+    labels:
+      {% if traefik_enabled_agentdvr %}
+      - traefik.enable=true
+      - traefik.http.services.agentdvr-${COMPOSE_PROJECT}.loadbalancer.server.port=8585
+      - traefik.http.routers.agentdvr-${COMPOSE_PROJECT}.rule=Host(`{{ hms_docker_container_map['agentdvr']['proxy_host_rule'] }}.${HMSD_DOMAIN}`)
+      - "traefik.http.routers.agentdvr-${COMPOSE_PROJECT}.middlewares=external-ipwhitelist"
+        {% if authentik_enabled_agentdvr %}
+      - traefik.http.routers.agentdvr-${COMPOSE_PROJECT}.middlewares=authentik-proxy-${COMPOSE_PROJECT}-agentdvr-midware@docker
+        {% endif %}
+      {% endif %}
+      {% if container_enabled_homepage and homepage_enabled_agentdvr %}
+      - homepage.group=Managers
+      - homepage.name=agentdvr
+      - homepage.icon=agentdvr.png
+      - homepage.href=http://{{ hms_docker_container_map['agentdvr']['proxy_host_rule'] }}.${HMSD_DOMAIN}
+      - homepage.description=Request Manager
+      - homepage.widget.type=agentdvr
+      - homepage.widget.url=http://agentdvr:8585
+      - homepage.widget.key=${agentdvr_KEY:-apikeyapikeyapikey}
+      {% if homepage_stats_enabled_agentdvr %}
+      - homepage.showStats=true
+      {% endif %}
+      {% endif %}
+    {% endif %}
+    volumes:
+      - ${HMSD_APPS_PATH}/agentdvr-config:/AgentDVR/Media/XML
+      - {{ hms_docker_media_path }}:/data
+      - /srv/security/recordings:/AgentDVR/Media/WebServerRoot/Media
+      - /srv/security/commands:/AgentDVR/Commands
+    {% if expose_ports_enabled_agentdvr %}
+    ports:
+      - 8090:8090
+      - 3478:3478/udp
+      - 50000-50010:50000-50010/udp
+    {% endif %}
+{% endif %}
+
+{% if container_enabled_gphotos %}
+  # gphotos container, YouTube to Plex
+  gphotos:
+    image: ghcr.io/gilesknap/gphotos-sync
+    container_name: gphotos
+    restart: ${RESTART_POLICY}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - "media_net"
+      - "download_net"
+      - "traefik_net"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - CONFIG=/config
+      - STORAGE=/data/Photos
+    {% if traefik_enabled_gphotos or container_enabled_homepage %}
+    labels:
+      {% if traefik_enabled_gphotos %}
+      - traefik.enable=true
+      - traefik.http.services.gphotos-${COMPOSE_PROJECT}.loadbalancer.server.port=8585
+      - traefik.http.routers.gphotos-${COMPOSE_PROJECT}.rule=Host(`{{ hms_docker_container_map['gphotos']['proxy_host_rule'] }}.${HMSD_DOMAIN}`)
+      - "traefik.http.routers.gphotos-${COMPOSE_PROJECT}.middlewares=external-ipwhitelist"
+        {% if authentik_enabled_gphotos %}
+      - traefik.http.routers.gphotos-${COMPOSE_PROJECT}.middlewares=authentik-proxy-${COMPOSE_PROJECT}-gphotos-midware@docker
+        {% endif %}
+      {% endif %}
+      {% if container_enabled_homepage and homepage_enabled_gphotos %}
+      - homepage.group=Managers
+      - homepage.name=gphotos
+      - homepage.icon=gphotos.png
+      - homepage.href=http://{{ hms_docker_container_map['gphotos']['proxy_host_rule'] }}.${HMSD_DOMAIN}
+      - homepage.description=Request Manager
+      - homepage.widget.type=gphotos
+      - homepage.widget.url=http://gphotos:8585
+      - homepage.widget.key=${gphotos_KEY:-apikeyapikeyapikey}
+      {% if homepage_stats_enabled_gphotos %}
+      - homepage.showStats=true
+      {% endif %}
+      {% endif %}
+    {% endif %}
+    volumes:
+      - ${HMSD_APPS_PATH}/gphotos-config:/config
+      - {{ hms_docker_media_path }}:/data
+    {% if expose_ports_enabled_gphotos %}
+    ports:
+      - 8585:8080
     {% endif %}
 {% endif %}
 
