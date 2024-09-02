@@ -2,6 +2,7 @@ name: Deployment Tests
 run-name: Test Deployment
 on:
   push:
+  pull_request:
   schedule:
     - cron:  '23 9 * * 0'
 
@@ -18,32 +19,37 @@ jobs:
       - name: Install ansible
         run: |
           sudo apt update
-          sudo apt install ansible make python3-pip
+          sudo sudo apt install software-properties-common
+          sudo add-apt-repository --yes --update ppa:ansible/ansible
+          sudo apt install ansible
 
       - name: Ensure base playbook requirements
+        # should mirror the steps for advanced config creation
+        # does not use the `make` command since it requires input and we cannot input in a Runner
         run: |
-          mkdir -p ./vars/custom
-          cp vars/default/*.yml ./vars/custom
-          mv ./vars/custom/main.yml ./vars/custom/main_custom.yml
-          sudo make install-reqs
+          mkdir -p ./inventory/group_vars/all
+          cp ./roles/hmsdocker/defaults/main/*.yml ./inventory/group_vars/all
+          chmod 0600 ./inventory/group_vars/all/*.yml
+          make install-reqs
 
       - name: Run playbook
         run: >-
           sudo ansible-playbook
-          -i inventory
-          --connection local
+          -i inventory/hosts.yml
           hms-docker.yml
           --diff
-          --extra-vars "
-          is_github_runner=yes
-          container_expose_ports=yes
-          hms_docker_plex_ssl_enabled=yes
-          separate_4k_instances_enable=yes
-          tautulli_include_jbops=yes
-          traefik_security_hardening=yes
-          "
+          --extra-vars "@.github/extra-vars.yml"
 
       - name: Check containers
         run: |
-          sleep 10
+          sleep 60
+          sudo pip3 install -r .github/workflows/scripts/requirements.txt
           sudo make verify-containers
+
+      - name: Run playbook again to ensure API keys are retrieved
+        run: >-
+          sudo ansible-playbook
+          -i inventory/hosts.yml
+          hms-docker.yml
+          --diff
+          --extra-vars "@.github/extra-vars.yml"

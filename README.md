@@ -12,6 +12,7 @@ Ansible Playbook to setup an automated Home Media Server stack running on Docker
 - [Requirements](#requirements)
 - [Warnings](#warning)
 - [Installation](#installation)
+- [Updating](#updating)
 - [Configuration](#configuration)
 - [Content layout](#content-layout)
 - [Using Cloudflare Tunnel](./docs/Cloudflare.md/#cloudflare-tunnel)
@@ -20,26 +21,62 @@ Ansible Playbook to setup an automated Home Media Server stack running on Docker
 
 ## Container List
 
-- Plex: media server
-- Sonarr: tv series management
-- Radarr: movie management
-- Bazarr: subtitle management
-- Prowlarr: tracker management
-- Transmission: download client with VPN and HTTP proxy
-- NZBGet: download client
-- Sabnzbd: download client
-- Tautulli: analytics
-- Traefik: reverse proxy (with SSL support from Let's Encrypt if configured)
-- Portainer: container management GUI
-- Overseerr: request platform
-- Requestrr: chat client for requests
-- Tdarr: media transcoding
-- Homepage: dashboarding
-- Watchtower: automatic container updates (if enabled)
-- Cloudflare-ddns: dynamic dns (if enabled)
-- Cloudflare Tunnel: Allows you to expose HTTP services without port-forwarding on your router, [see here](https://www.cloudflare.com/products/tunnel/) for more info
-- Authentik: SSO
-- Tailscale: mesh VPN
+### Media Servers
+
+- [Plex](https://docs.linuxserver.io/images/docker-plex/)
+- [Jellyfin](https://docs.linuxserver.io/images/docker-jellyfin/)
+- [Emby](https://docs.linuxserver.io/images/docker-emby/)
+
+### Media Management Systems
+
+- [Sonarr](https://github.com/Sonarr/Sonarr): tv series management
+- [Radarr](https://github.com/Radarr/Radarr): movie management
+- [Lidarr](https://github.com/Lidarr/Lidarr): music management
+- [Bazarr](https://github.com/morpheus65535/bazarr): subtitle management
+- [Prowlarr](https://github.com/Prowlarr/Prowlarr): tracker management
+- [Readarr](https://github.com/Readarr/Readarr): ebook management
+- [Overseerr](https://github.com/sct/overseerr): request platform
+- [Requestrr](https://github.com/thomst08/requestrr): chat client for requests
+- [Calibre](https://github.com/linuxserver/docker-calibre): ebook management
+- [Tdarr](https://github.com/HaveAGitGat/Tdarr): media transcoding
+- [Maintainerr](https://github.com/jorenn92/Maintainerr): media management
+- [tinyMediaManager](https://gitlab.com/tinyMediaManager/tinyMediaManager): media management
+
+### Download Clients
+
+- [Transmission](https://github.com/haugene/docker-transmission-openvpn): download client with VPN and HTTP proxy
+- [NZBGet](https://docs.linuxserver.io/images/docker-nzbget/): download client
+- [Sabnzbd](https://docs.linuxserver.io/images/docker-sabnzbd/): download client
+
+### Analytics / Dashboards
+
+- [Tautulli](https://github.com/Tautulli/Tautulli): analytics
+- [Homepage](https://github.com/gethomepage/homepage): dashboarding / homepage
+- [Heimdall](https://github.com/linuxserver/Heimdall): dashboarding / homepage
+
+### Networking
+
+- [Traefik](https://hub.docker.com/_/traefik): reverse proxy (with SSL support from Let's Encrypt if configured)
+- [Tailscale](https://hub.docker.com/r/tailscale/tailscale): mesh VPN
+- [Cloudflare-ddns](https://hub.docker.com/r/oznu/cloudflare-ddns/): dynamic dns (if enabled)
+- [Cloudflare Tunnel](https://hub.docker.com/r/cloudflare/cloudflared): Allows you to expose HTTP services without port-forwarding on your router, [see here](https://www.cloudflare.com/products/tunnel/) for more info
+
+### Misc
+
+- [Portainer](https://hub.docker.com/r/portainer/portainer): container management GUI
+- [Watchtower](https://github.com/containrrr/watchtower): automatic container updates (if enabled)
+- [Authentik](https://github.com/goauthentik/authentik): SSO (Single Sign-On)
+- [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr): CAPTCHA solving
+- [Uptime Kuma](https://github.com/louislam/uptime-kuma): service status monitoring
+- [Kavita](https://hub.docker.com/r/kizaing/kavita): digital library
+- [Unpackerr](https://github.com/Unpackerr/unpackerr): download decompression
+- [Autobrr](https://github.com/autobrr/autobrr): torrent automation
+- [Notifiarr](https://github.com/Notifiarr/notifiarr): notification system
+- [Speedtest-Tracker](https://github.com/alexjustesen/speedtest-tracker): notification system
+- [Recyclarr](https://github.com/recyclarr/recyclarr): auto-sync for [TRaSH guides](https://trash-guides.info/)
+- [PASTA](https://github.com/cglatot/pasta): audio and subtitle management
+- [Netdata](https://github.com/netdata/netdata): observability
+
 
 ## Other Features
 
@@ -54,44 +91,60 @@ Ansible Playbook to setup an automated Home Media Server stack running on Docker
 - Support for separate 4K instances for Sonarr and Radarr
 - Script to convert a Traefik certificate file to a Plex-supported certificate file (PKCS12)
 - Automated dashboard configuration in Homepage
+- Custom advanced monitoring script(s)
 
 ## Supported Platforms
 
-Currently only Ubuntu 22.04+ is actively supported and is used for GitHub Actions testing.
+Currently only Ubuntu 22.04 LTS is actively supported and is used for GitHub Actions testing.
 
-RHEL based systems (CentOS 8, Fedora, Alma Linux, Rocky Linux) may work, but are no longer being tested against.
+Ubuntu 24.04 LTS may work, please submit an Issue if you encounter any.
+
+I've confirmed this repo also works on a Raspberry Pi 5 with 8GB RAM, but have not tested against other ARM-based systems (Apple Silicon, NAS systems, etc).
+
+RHEL based systems (CentOS 8, Fedora, Alma Linux, Rocky Linux) may work, but are no longer being tested against and are not officially supported.
 
 ## Requirements
 
-- `root` or `sudo` access
-- [Supported Platform](#supported-platforms)
-- 4 CPU Cores
+### Hardware
+
+- Minimum 4 CPU Cores
 - Minimum 4GB RAM (2GB additional if using Authentik)
 - Minimum 8GB free disk space
-- You own a domain name and are able to modify DNS A and TXT records (if you want SSL and/or dynamic DNS)
+
+### Software / Services
+
+- [Supported Platform](#supported-platforms)
+- `root` or `sudo` access
+- Ansible
+- You own a domain name and are able to modify DNS `A` and `TXT` records (if you want SSL and/or dynamic DNS)
+  - (Preferred) Have an internal DNS server that can resolve some or all of your domain name/zone.
 - You use a [supported VPN provider](https://haugene.github.io/docker-transmission-openvpn/supported-providers/#internal_providers) (if Transmission is enabled)
 - You use a [supported DNS provider](https://doc.traefik.io/traefik/https/acme/#providers) (if SSL is enabled)
 - You have a Cloudflare account with the correct DNS zones and API keys configured (if dynamic DNS and/or SSL is enabled)
-- Familiarity with editing config files
-- Familiarity with Linux (installing packages, troubleshooting, etc)
 - Nvidia GPU drivers already installed (if using Nvidia GPU acceleration)
-- Python 3.8 (Recommended, minimum Python 3.6)
-- Ansible (minimum 2.9)
+
+### Network
+
 - If you plan to make Plex and/or Overseerr available outside your local network, the following ports must be forwarded in your router to the IP of the server that will be running these containers:
   - Instructions for forwarding ports to the correct device is outside the scope of this project as every router/gateway has different instructions.
   - This is in no way guaranteed to be the best or most secure way to do this, and this assumes your ISP does not block these ports
+  - `32400/tcp` (Plex)
   - `80/tcp` (HTTP) (Not required if using Cloudflare Tunnel)
   - `443/tcp` (HTTPS) (Not required if using Cloudflare Tunnel)
-  - `32400/tcp` (Plex)
+
+### Technical Skills
+
+- Familiarity with editing config files (mainly YAML format)
+- Familiarity with Linux (installing packages, troubleshooting, etc)
+- Familiarity with Docker/containers (debugging, starting/stopping, getting a shell/CLI)
 
 ---
 
 ## WARNING
 
 This playbook assumes that it is a fresh install of an operating system that has not been configured yet.
-It should be safe to run on an existing system, BUT it may cause issues with Python since it installs Python 3.8, Docker repos, configures Nvidia GPU acceleration (if enabled), and configures network mounts (if enabled).
 
-To ensure no conflicting changes with an existing system, you can run this playbook in "check mode" to see if any changes would be made by running `make check`
+To ensure no conflicting changes with an existing system, you can run this playbook in "check mode" to see what, if any, changes would be made by running `sudo make check`
 
 ## Scope of the Project
 
@@ -103,13 +156,14 @@ Setting up the individual container configurations, such as for Sonarr, Radarr, 
 
 It is recommended to read and follow this guide entirely as there is a lot of configuration options that are required to get the system up and running to its full potential.
 
-1. Install requirements and clone the repository:
+1. Install Ansible for your system by following the instructions available here: https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html
+
+2. Install requirements and clone the repository:
 
    Ubuntu:
 
    ```bash
-   sudo apt update
-   sudo apt install git make ansible python3-pip -y
+   sudo apt install git make python3-pip -y
    ```
 
    ```bash
@@ -118,7 +172,19 @@ It is recommended to read and follow this guide entirely as there is a lot of co
    cd ansible-hms-docker/
    ```
 
-2. Proceed to [Configuration](#configuration)
+3. Proceed to [Configuration](#configuration)
+
+---
+
+## Updating
+
+To easily update from this git repo _**and**_ update your custom variable names (due to deprecating/renaming variables), run:
+
+```bash
+make update
+```
+
+Previous variable names will still work for at least a year after the change and will be noted as such within the default configs. Please update to resolve.
 
 ---
 
@@ -216,10 +282,10 @@ You can run the playbook using the included `Makefile` with the following comman
 
 ```bash
 # Check mode
-make check
+sudo make check
 
 # Apply changes
-make apply
+sudo make apply
 ```
 
 Once the playbook has finished running, it may take up to a few minutes for the SSL certificate to be generated (if enabled).
@@ -261,3 +327,5 @@ Authentik: `https://authentik.< domain >`
 Tdarr: `https://tdarr.< domain >`
 
 Homepage: `https://homepage.< domain >`
+
+Uptime Kuma: `https://uptime-kuma.< domain >`

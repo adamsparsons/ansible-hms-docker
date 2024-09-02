@@ -3,22 +3,17 @@
   become: yes
   gather_facts: yes
   vars:
+    hmsd_current_version: 1.4
+    hmsd_version_file: "{{ hms_docker_data_path }}/.hmsd-version"
     regex: '[^A-Za-z0-9._-]'
     replace: '_'
-    pip_install_packages:
-    - name: docker
-      version: "6.1.3"
-    - name: docker-compose
+    arr_apikey: '(?<=\<ApiKey\>)\w*(?=\<\/ApiKey\>)'
+    
 
   roles:
     - galaxy-roles/geerlingguy.docker
-    - galaxy-roles/geerlingguy.pip
 
   tasks:
-  - name: Ensure vars are loaded
-    ansible.builtin.include_vars:
-      dir: vars/custom
-
   - name: Ensure Nvidia GPU role if enabled
     ansible.builtin.import_role:
       name: gpu
@@ -30,7 +25,7 @@
 
   - name: Verify all Traefik endpoints are accessible
     ansible.builtin.uri:
-      url: http://{{ item.key }}.{{ hms_docker_domain }}
+      url: http://{{ item.value.proxy_host_rule }}.{{ hms_docker_domain }}
       status_code: 200,302,401,403
       validate_certs: no
     with_dict:
@@ -38,5 +33,5 @@
     when:
       - item.value.traefik is defined and item.value.traefik
       - item.value.enabled is defined and item.value.enabled
-      - container_enabled_traefik
+      - hmsdocker_container_enabled_traefik
       - traefik_verify_endpoints is defined and traefik_verify_endpoints

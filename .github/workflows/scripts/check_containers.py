@@ -69,7 +69,7 @@ def main():
                                 name = 'authentik'
                                 ssl = True
                             url = f'http{"s" if ssl else ""}://{host_ip}:{host_port}{suffix}'
-                            host_header = f'{name}.home.{domain}'
+                            host_header = f'{name}.{domain}'
                             logging.debug(f'getting {url} with Host header {host_header}')
                             # file deepcode ignore SSLVerificationBypass: Containers may host a self-signed certificate
                             response = requests.get(url, verify=False, headers={
@@ -91,7 +91,11 @@ def main():
         except KeyError as e:
             logging.debug(f'{name} is not in the project {project}')
             continue
-    fail_rate = failure_codes/requests_made
+    if requests_made > 0:
+        fail_rate = failure_codes/requests_made
+    else:
+        logging.error(f'Did not make any requests, exiting')
+        sys.exit(1)
     threshold = 0.34
     if fail_rate > threshold:
         logging.error(f'Failure rate exceeded {threshold}, it was {fail_rate}')

@@ -1,5 +1,8 @@
 ---
-- name: Ensure paths exists locally.
+- name: Run versioning checks
+  ansible.builtin.import_tasks: "versioning.yml"
+
+- name: Ensure data, apps, and mount paths exists locally.
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -7,15 +10,13 @@
     - "{{ hms_docker_data_path }}"
     - "{{ hms_docker_apps_path }}"
     - "{{ hms_docker_mount_path }}"
-    - "{{ hms_docker_media_path }}"
-    - "{{ transmission_custom_download_path }}"
   when: item is defined and item != ''
 
 - name: NAS base configuration tasks.
-  include_tasks: "nas_{{ hms_docker_media_share_type | lower }}.yml"
+  ansible.builtin.include_tasks: "nas_{{ hms_docker_media_share_type | lower }}.yml"
 
 - name: Ensure additional NAS configuration
-  include_tasks: "nas_additional_{{ item.type | lower }}.yml"
+  ansible.builtin.include_tasks: "nas_additional_{{ item.type | lower }}.yml"
   with_items: "{{ nas_client_remote_additional_paths }}"
   when:
     - nas_client_remote_additional_paths is defined
@@ -24,44 +25,66 @@
 
 - name: Ensure library folders.
   ansible.builtin.file:
-    path: "{{ hms_docker_media_path }}/{{ item.folder_name }}"
+    path: "{{ hmsdocker_library_path }}/{{ item.folder_name }}"
     state: directory
   with_items: "{{ hms_docker_library_folders }}"
 
-- name: Ensure container config directories exist.
-  ansible.builtin.file:
-    path: "{{ hms_docker_apps_path }}/{{ item.key }}/config"
-    state: directory
-  with_dict: "{{ hms_docker_container_map }}"
-  when: item.value.directory and (item.value.enabled is defined and item.value.enabled)
+# The following tasks that deal with config folders are done this way to ensure that the container config folder
+# is given the same ownership as the specified UID and GID of the container before it starts
 
-- name: Ensure separate 4K container config directories exist if enabled.
-  ansible.builtin.file:
-    path: "{{ hms_docker_apps_path }}/{{ item.key }}-{{ separate_4k_instances_suffix }}/config"
-    state: directory
+# First, check if directories already exist
+- name: Check if container config directories exist
+  ansible.builtin.stat:
+    path: "{{ hms_docker_apps_path }}/{{ item.key }}/config"
   with_dict: "{{ hms_docker_container_map }}"
-  when: 
-    - item.value.directory
+  when:
     - item.value.enabled is defined and item.value.enabled
-    - item.key == 'sonarr' or item.key == 'radarr'
-    - separate_4k_instances_enable is defined and separate_4k_instances_enable
+  register: directory_stats
+
+# Loop through previously queried directory list and only create folders that do not already exist
+# This is to ensure that permissions for existing directories are not changed
+- name: Ensure container config directories exist if not already
+  ansible.builtin.file:
+    path: "{{ hms_docker_apps_path }}/{{ item.item.key }}/config"
+    state: directory
+    owner: "{{ container_uid }}"
+    group: "{{ container_gid }}"
+    mode: 0755
+  with_items: "{{ directory_stats.results }}"
+  when:
+    - item.item.value.enabled is defined and item.item.value.enabled
+    - not item.stat.exists
+
+- name: Ensure separate 4K container config directories exist if enabled
+  ansible.builtin.file:
+    path: "{{ hms_docker_apps_path }}/{{ item.item.key }}-{{ separate_4k_instances_suffix }}/config"
+    state: directory
+    owner: "{{ container_uid }}"
+    group: "{{ container_gid }}"
+    mode: 0755
+  with_items: "{{ directory_stats.results }}"
+  when: 
+    - item.item.value.directory | default(false)
+    - item.item.value.enabled | default(false)
+    - item.item.key == 'sonarr' or item.item.key == 'radarr'
+    - separate_4k_instances_enable | default(false)
+    - not item.stat.exists
 
 - name: Ensure Traefik
-  import_tasks: "traefik.yml"
-  when: container_enabled_traefik
+  ansible.builtin.import_tasks: "traefik.yml"
+  when: hmsdocker_container_enabled_traefik
 
 - name: Ensure Authentik
-  import_tasks: "authentik.yml"
-  when: ((container_enabled_authentik) or 
-        (authentik_enabled)) and 
-        (traefik_ssl_enabled)
+  ansible.builtin.import_tasks: "authentik.yml"
+  when: (hmsdocker_authentik_enabled_globally and 
+        traefik_ssl_enabled)
 
 - name: Ensure homepage
   ansible.builtin.import_tasks: "homepage.yml"
-  when: container_enabled_homepage
+  when: hmsdocker_container_enabled_homepage
 
 - name: Ensure JBOPS if enabled
-  when: tautulli_jbops_enabled
+  when: tautulli_jbops_enabled | default(false)
   block:
     - name: Ensure global git config ignores dubious ownership permissions
       community.general.git_config:
@@ -76,6 +99,9 @@
       diff: false
       changed_when: false
   
+- name: Retrieve app API keys if available
+  ansible.builtin.import_tasks: "app_api_key_reader.yml"
+  when: hmsdocker_container_enabled_homepage
 
 - name: Ensure env
   ansible.builtin.template:
@@ -90,11 +116,39 @@
   no_log: true
   register: compose_env
   vars:
-  - authentik_key: "{{ (slurped_key_data['content'] | b64decode) if slurped_key_data['content'] is defined else '### Will be obtained during full run ###' }}"
-  - authentik_pgpass: "{{ (slurped_pg_pass_data['content'] | b64decode) if slurped_pg_pass_data['content'] is defined else '### Will be obtained during full run ###' }}"
-  - authentik_pgu: "{{ authentik_old_pg_user if authentik_old_pg_user is defined and authentik_old_pg_user != '' else authentik_pg_user }}"
-  - authentik_pgdb: "{{ authentik_old_pg_db if authentik_old_pg_db is defined and authentik_old_pg_db != '' else authentik_pg_db }}"
-  - watchtower_key: "{{ (slurped_watchtower_key_data['content'] | b64decode) if slurped_watchtower_key_data['content'] is defined else '### Will be obtained during full run ###' }}"
+    authentik_key: "{{ (slurped_key_data['content'] | b64decode) if slurped_key_data['content'] is defined else '### Will be obtained during full run ###' }}"
+    authentik_pgpass: "{{ (slurped_pg_pass_data['content'] | b64decode) if slurped_pg_pass_data['content'] is defined else '### Will be obtained during full run ###' }}"
+    authentik_pgu: "{{ authentik_old_pg_user if authentik_old_pg_user is defined and authentik_old_pg_user != '' else authentik_pg_user }}"
+    authentik_pgdb: "{{ authentik_old_pg_db if authentik_old_pg_db is defined and authentik_old_pg_db != '' else authentik_pg_db }}"
+    watchtower_key: "{{ (slurped_watchtower_key_data['content'] | b64decode) if slurped_watchtower_key_data['content'] is defined else '### Will be obtained during full run ###' }}"
+    sonarr_key: "{{ slurped_api_key_sonarr['content'] | b64decode | regex_search(arr_apikey) | default('') }}"
+    sonarr_4k_key: "{{ slurped_api_key_sonarr_4k['content'] | b64decode | regex_search(arr_apikey) | default('') }}"
+    radarr_key: "{{ slurped_api_key_radarr['content'] | b64decode | regex_search(arr_apikey) | default('') }}"
+    radarr_4k_key: "{{ slurped_api_key_radarr_4k['content'] | b64decode | regex_search(arr_apikey) | default('') }}"
+    prowlarr_key: "{{ slurped_api_key_prowlarr['content'] | b64decode | regex_search(arr_apikey) | default('') }}"
+    bazarr_key: "{{ slurped_api_key_bazarr['content'] | b64decode | from_yaml }}"
+    overseerr_key: "{{ slurped_api_key_overseerr['content'] | b64decode | from_json }}"
+    tautulli_key: "{{ slurped_api_key_tautulli['content'] | b64decode | regex_search('(?<=api_key = )\\w*') | default('') }}"
+    plex_key: "{{ slurped_api_key_plex['content'] | b64decode | regex_search('(?<=PlexOnlineToken=\")(.*?)(?=\")') | default('') }}"
+    sabnzbd_key: "{{ slurped_api_key_sabnzbd['content'] | b64decode | regex_search('(?<=api_key = )\\w*') | default('') }}"
+    readarr_key: "{{ slurped_api_key_readarr['content'] | b64decode | regex_search(arr_apikey) | default('') }}"
+    lidarr_key: "{{ slurped_api_key_lidarr['content'] | b64decode | regex_search(arr_apikey) | default('') }}"
+
+- name: Ensure App Compose Files
+  ansible.builtin.import_tasks: "generate_compose_files.yml"
+
+### Adding here for the future when all the containers will be in their own files
+# - name: Generate Docker Compose files for enabled containers 
+#   when: item.value.enabled
+#   ansible.builtin.template:
+#     src: containers/{{ item.key }}.yml.j2
+#     dest: "{{ compose_dir.dest | default(hms_docker_data_path + '/compose_files') }}/{{ item.key }}.yml"
+#     owner: "{{ container_uid }}"
+#     group: "{{ container_gid }}"
+#     mode: 0644
+#     trim_blocks: yes
+#     lstrip_blocks: yes
+#   with_dict: "{{ hms_docker_container_map }}" 
 
 - name: Ensure docker-compose.yml file.
   ansible.builtin.template:
@@ -107,10 +161,9 @@
     trim_blocks: yes
 
 - name: Ensure containers defined in compose file.
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ hms_docker_data_path }}"
     project_name: "{{ project_name }}"
-    pull: "{{ container_pull_images_first }}"
     state: "{{ hms_docker_compose_container_state }}"
     remove_orphans: "{{ container_remove_orphans }}"
     # env_file: "{{ compose_env.dest }}" # Commented out since this module defaults to using the .env file within the project_src location, but leaving just in case advanced users wish to point to a different location
@@ -118,37 +171,20 @@
     - not ansible_check_mode
 
 - name: Sabnzbd additional config
-  when: container_enabled_sabnzbd
-  block:
-    - name: Get current sabnzbd config file contents
-      ansible.builtin.slurp:
-        path: "{{ hms_docker_apps_path }}/sabnzbd/config/sabnzbd.ini"
-      register: slurped_sabnzbd_data
-      check_mode: false
-      no_log: true
-
-    - name: Pull current sabnzbd allowed hosts
-      ansible.builtin.set_fact:
-        slurped_sabnzbd_hostlist: "{{ slurped_sabnzbd_data['content'] | b64decode | regex_search('(?<=host_whitelist = ).*') | split(',') }}"
-        cacheable: false
-      when: slurped_sabnzbd_data['content'] is defined
-      no_log: true
-
-    - name: Ensure sabnzbd container config has allowlisted hostname
-      ansible.builtin.replace:
-        path: "{{ hms_docker_apps_path }}/sabnzbd/config/sabnzbd.ini"
-        regexp: '(?<=host_whitelist = ).*'
-        replace: "{{ slurped_sabnzbd_hostlist | join(',') }}{{ hms_docker_container_map['sabnzbd']['proxy_host_rule'] }}.{{ hms_docker_domain }}"
-      when: hms_docker_container_map['sabnzbd']['proxy_host_rule'] + "." + hms_docker_domain not in slurped_sabnzbd_hostlist
-      notify: restart sabnzbd
+  ansible.builtin.import_tasks: "sabnzbd.yml"
+  when: hmsdocker_container_enabled_sabnzbd
 
 - name: Ensure Plex SSL script and resources
   ansible.builtin.import_tasks: "plex_ssl.yml"
   when: hms_docker_plex_ssl_enabled and traefik_ssl_enabled
 
+- name: Ensure custom scripts
+  ansible.builtin.import_tasks: "scripts.yml"
+  when: custom_scripts_enabled | default(false)
+
 - name: Ensure Transmission and VPN connection
-  import_tasks: "transmission.yml"
+  ansible.builtin.import_tasks: "transmission.yml"
   when: 
-    - container_enabled_transmission
+    - hmsdocker_container_enabled_transmission
     - not ansible_check_mode
-    - not is_github_runner|default(false)
+    - not is_github_runner | default(false)

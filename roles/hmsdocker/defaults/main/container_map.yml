@@ -7,6 +7,9 @@
 #  `authentik`: Enables or disables accessing the container via Authentik
 #  `authentik_provider_type`: Enables or disables accessing the container via Authentik HTTP Proxy. Disable if application does NOT need an additional proxy layer (such as for OAuth or OpenID Connect)
 #  `expose_to_public`: Enables or disables exposing the container to the public internet via Traefik (removes allowlist restrictions, does not expose the container port)
+#  `homepage`: Enables or disables Homepage container integration (if supported)
+#  `homepage_stats`: Displays the container stats in Homepage (CPU, RAM, network traffic)
+
 hms_docker_container_map:
   traefik:
     enabled: yes
@@ -175,6 +178,16 @@ hms_docker_container_map:
     expose_to_public: yes
     homepage: no
     homepage_stats: no
+  uptimekuma:
+    enabled: no
+    proxy_host_rule: uptime-kuma
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: yes
+    homepage: no
+    homepage_stats: no
   whisper:
     enabled: yes
     proxy_host_rule: whisper
@@ -184,4 +197,136 @@ hms_docker_container_map:
     authentik_provider_type: proxy
     expose_to_public: yes
     homepage: no
+  heimdall:
+    enabled: no
+    proxy_host_rule: heimdall
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  readarr:
+    enabled: no
+    proxy_host_rule: readarr
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+    homepage: yes
     homepage_stats: no
+  kavita:
+    enabled: no
+    proxy_host_rule: kavita
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: yes
+    homepage: no
+    homepage_stats: no
+    expose_to_public: no
+  calibre:
+    enabled: no
+    proxy_host_rule: calibre
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  jellyfin:
+    enabled: no
+    proxy_host_rule: jellyfin
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+    homepage: yes
+    homepage_stats: yes
+  emby:
+    enabled: no
+    proxy_host_rule: emby
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+    homepage: yes
+    homepage_stats: yes
+  maintainerr:
+    enabled: no
+    proxy_host_rule: maintainerr
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  unpackerr:
+    enabled: no
+    proxy_host_rule: unpackerr
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  lidarr:
+    enabled: no
+    proxy_host_rule: lidarr
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+    homepage: yes
+    homepage_stats: yes
+  autobrr:
+    enabled: no
+    proxy_host_rule: autobrr
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+    homepage: yes
+    homepage_stats: yes
+  notifiarr:
+    enabled: no
+    proxy_host_rule: notifiarr
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  speedtest-tracker:
+    enabled: no
+    proxy_host_rule: speedtest
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  recyclarr:
+    enabled: no
+    directory: yes
+  tinymediamanager:
+    enabled: no
+    proxy_host_rule: tmm
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  pasta:
+    enabled: no
+    proxy_host_rule: pasta
+    directory: yes
+    traefik: yes
+    authentik: no
+    authentik_provider_type: proxy
+    expose_to_public: no
+  netdata:
+    enabled: no
+
+
+
